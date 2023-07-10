@@ -51,13 +51,16 @@ function getRowCol(index: number) {
 }
 
 export function App() {
+	const [soundEnabled, setSoundEnabled] = useState(true);
 	const { width, height } = useWindowSize();
 	const [checkboxes, setCheckboxes] = useState(items);
 	const [isOpen, setIsOpen] = useState(false);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const [playClick] = useSound("/click.mp3", { soundEnabled });
 	const [play, { stop }] = useSound("/cheering.mp3", {
 		interrupt: true,
 		loop: true,
+		soundEnabled,
 	});
 
 	function saveItems(e: FormEvent<HTMLFormElement>) {
@@ -74,6 +77,7 @@ export function App() {
 
 	function changeItem(index: number) {
 		return (checked: boolean) => {
+			playClick();
 			const newItems = [...checkboxes];
 			newItems[index].checked = checked;
 			setCheckboxes(newItems);
@@ -127,8 +131,19 @@ export function App() {
 			{allChecked && (
 				<Confetti width={width} height={height} numberOfPieces={500} />
 			)}
-			<header className="my-4 rounded-lg p-4 bg-gray-50 flex gap-3 items-center justify-between">
+			<header className="my-4 rounded-lg p-4 bg-gray-50 flex gap-3 items-center">
 				<strong>BINGO!</strong>
+
+				<button
+					className="ml-auto hover:text-gray-500"
+					onClick={() => setSoundEnabled(!soundEnabled)}
+				>
+					{soundEnabled ? (
+						<IconSpeaker className="w-6 h-6" />
+					) : (
+						<IconSpeakerX className="w-6 h-6" />
+					)}
+				</button>
 
 				<button className="hover:text-gray-500" onClick={() => setIsOpen(true)}>
 					<IconEdit className="w-6 h-6" />
@@ -271,6 +286,44 @@ function IconEdit(props: JSX.IntrinsicElements["svg"]) {
 				strokeLinecap="round"
 				strokeLinejoin="round"
 				d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
+			/>
+		</svg>
+	);
+}
+
+function IconSpeaker(props: JSX.IntrinsicElements["svg"]) {
+	return (
+		<svg
+			{...props}
+			xmlns="http://www.w3.org/2000/svg"
+			fill="none"
+			viewBox="0 0 24 24"
+			strokeWidth={1.5}
+			stroke="currentColor"
+		>
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M19.114 5.636a9 9 0 010 12.728M16.463 8.288a5.25 5.25 0 010 7.424M6.75 8.25l4.72-4.72a.75.75 0 011.28.53v15.88a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75z"
+			/>
+		</svg>
+	);
+}
+
+function IconSpeakerX(props: JSX.IntrinsicElements["svg"]) {
+	return (
+		<svg
+			{...props}
+			xmlns="http://www.w3.org/2000/svg"
+			fill="none"
+			viewBox="0 0 24 24"
+			strokeWidth={1.5}
+			stroke="currentColor"
+		>
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M17.25 9.75L19.5 12m0 0l2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6l4.72-4.72a.75.75 0 011.28.531V19.94a.75.75 0 01-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.506-1.938-1.354A9.01 9.01 0 012.25 12c0-.83.112-1.633.322-2.395C2.806 8.757 3.63 8.25 4.51 8.25H6.75z"
 			/>
 		</svg>
 	);
