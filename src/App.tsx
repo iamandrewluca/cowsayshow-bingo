@@ -149,7 +149,7 @@ export function App() {
 					return (
 						<li
 							key={index}
-							className={cx("border-2 relative aspect-square rounded-lg", {
+							className={cx("border-2 relative sm:aspect-square rounded-lg", {
 								"bg-gray-50 shadow-inner": !allChecked,
 								"border-cowsay text-cowsay": !allChecked && (isCol || isRow),
 								"bg-cowsay border-cowsay shadow-inner": allChecked,
@@ -162,7 +162,7 @@ export function App() {
 							>
 								<span>{item.text}</span>
 								{item.checked && !(isCol || isRow) && (
-									<IconCheck className="absolute bottom-2 right-2 w-6 h-6 text-cowsay" />
+									<IconCheck className="absolute bottom-1 right-1 w-3 h-3 sm:bottom-2 sm:right-2 sm:w-6 sm:h-6 text-red-500" />
 								)}
 							</Switch>
 						</li>
