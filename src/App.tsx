@@ -41,7 +41,7 @@ function getRowCol(index: number) {
 
 export function App() {
 	const [checkboxes, setCheckboxes] = useState(items);
-	const [isOpen, setIsOpen] = useState(true);
+	const [isOpen, setIsOpen] = useState(false);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
 	function saveItems(e: FormEvent<HTMLFormElement>) {
