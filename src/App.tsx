@@ -134,7 +134,12 @@ export function App() {
 					<IconEdit className="w-6 h-6" />
 				</button>
 			</header>
-			<ul className="grid grid-cols-5 grid-rows-5 gap-4 text-center font-semibold text-xs font-mono">
+			<ul
+				className="grid grid-cols-5 grid-rows-5 gap-4 text-center font-semibold font-mono"
+				style={{
+					fontSize: "clamp(0.5rem, 1vw, 0.75rem)",
+				}}
+			>
 				{checkboxes.map((item, index) => {
 					const { col, row } = getRowCol(index);
 
@@ -153,7 +158,7 @@ export function App() {
 							<Switch
 								checked={item.checked}
 								onChange={changeItem(index)}
-								className="w-full h-full p-5"
+								className="w-full h-full p-1 lg:p-5"
 							>
 								<span>{item.text}</span>
 								{item.checked && !(isCol || isRow) && (
