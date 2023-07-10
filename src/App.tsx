@@ -1,15 +1,13 @@
-import { useState, useMemo } from "react";
-import { Switch } from "@headlessui/react";
+import { useState, useMemo, Fragment, useRef, FormEvent } from "react";
+import { Dialog, Transition, Switch } from "@headlessui/react";
 import cx from "clsx";
 
+// prettier-ignore
 const items = [
 	{ text: `AI ne lasă fără de lucru`, checked: false },
 	{ text: `Apare un nou clon la twitter`, checked: false },
 	{ text: `Right to repair`, checked: false },
-	{
-		text: `Cineva îmbracă (metaforic) o beretă din folie de aluminiu`,
-		checked: false,
-	},
+	{ text: `Cineva îmbracă (metaforic) o beretă din folie de aluminiu`, checked: false },
 	{ text: `Spunem cuvintele Elon și Anime într-o propoziție`, checked: false },
 	{ text: `Ceva nu de bine despre Rust 😱`, checked: false },
 	{ text: `Vlad spune cuvântul "speculativ"`, checked: false },
@@ -33,14 +31,30 @@ const items = [
 	{ text: `Spunem cuvintele Elon și Anime într-o propoziție`, checked: false },
 ];
 
+const size = 5;
+
 function getRowCol(index: number) {
-	const row = Math.floor(index / 5);
-	const col = index % 5;
+	const row = Math.floor(index / size);
+	const col = index % size;
 	return { row, col };
 }
 
 export function App() {
 	const [checkboxes, setCheckboxes] = useState(items);
+	const [isOpen, setIsOpen] = useState(true);
+	const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+	function saveItems(e: FormEvent<HTMLFormElement>) {
+		e.preventDefault();
+
+		const newItems =
+			textareaRef.current?.value
+				.split("\n")
+				.map((text) => ({ text, checked: false })) ?? [];
+
+		setCheckboxes(newItems);
+		setIsOpen(false);
+	}
 
 	function changeItem(index: number) {
 		return (checked: boolean) => {
@@ -50,43 +64,63 @@ export function App() {
 		};
 	}
 
-	const allChecked = checkboxes.every((item) => item.checked);
-
-	const { checkedCols, checkedRows } = useMemo(() => {
-		const rows = new Map<number, number>();
-		const cols = new Map<number, number>();
+	const { checkedCols, checkedRows, allChecked } = useMemo(() => {
+		const rows: Record<number, number> = {};
+		const cols: Record<number, number> = {};
+		let checkCount = 0;
 
 		checkboxes.forEach((item, index) => {
 			const { row, col } = getRowCol(index);
-			if (item.checked) {
-				rows.set(row, (rows.get(row) ?? 0) + 1);
-				cols.set(col, (cols.get(col) ?? 0) + 1);
-			} else {
-				rows.set(row, 0);
-				cols.set(col, 0);
-			}
+
+			const rowCount = rows[row] ?? 0;
+			const colCount = cols[col] ?? 0;
+
+			rows[row] = item.checked ? rowCount + 1 : rowCount;
+			cols[col] = item.checked ? colCount + 1 : colCount;
+
+			checkCount += item.checked ? 1 : 0;
 		});
 
-		return { checkedCols: cols, checkedRows: rows };
+		const checkedRows = Object.entries(rows).map(([row, count]) => [
+			row,
+			count === size,
+		]);
+
+		const checkedCols = Object.entries(cols).map(([col, count]) => [
+			col,
+			count === size,
+		]);
+
+		return {
+			checkedRows: Object.fromEntries(checkedRows),
+			checkedCols: Object.fromEntries(checkedCols),
+			allChecked: checkCount === checkboxes.length,
+		};
 	}, [checkboxes]);
 
 	return (
-		<div className="min-h-screen flex items-center justify-center">
-			<ul className="grid grid-cols-5 grid-rows-5 max-w-4xl gap-4 text-center font-semibold">
+		<main className="min-h-screen flex max-w-3xl mx-auto px-4 flex-col">
+			<header className="my-4 rounded-lg p-4 bg-gray-50 flex gap-3 items-center justify-between">
+				<strong>BINGO!</strong>
+
+				<button className="hover:text-gray-500" onClick={() => setIsOpen(true)}>
+					<IconEdit className="w-6 h-6" />
+				</button>
+			</header>
+			<ul className="grid grid-cols-5 grid-rows-5 gap-4 text-center font-semibold text-xs font-mono">
 				{checkboxes.map((item, index) => {
 					const { col, row } = getRowCol(index);
 
-					const isCol = checkedCols.get(col) === 5;
-					const isRow = checkedRows.get(row) === 5;
+					const isCol = checkedCols[col];
+					const isRow = checkedRows[row];
 
 					return (
 						<li
 							key={index}
-							className={cx("relative aspect-square", {
-								"bg-teal-200": !allChecked && !isCol && !isRow,
-								"bg-blue-500": !allChecked && isCol,
-								"bg-orange-500": !allChecked && isRow,
-								"bg-red-500": allChecked,
+							className={cx("border-2 relative aspect-square rounded-lg", {
+								"bg-gray-50 shadow-inner": !allChecked,
+								"border-cowsay text-cowsay": !allChecked && (isCol || isRow),
+								"bg-cowsay border-cowsay shadow-inner": allChecked,
 							})}
 						>
 							<Switch
@@ -95,19 +129,83 @@ export function App() {
 								className="w-full h-full p-5"
 							>
 								<span>{item.text}</span>
-								{item.checked && (
-									<Icon className="absolute bottom-2 right-2 w-6 h-6 text-red-500 " />
+								{item.checked && !(isCol || isRow) && (
+									<IconCheck className="absolute bottom-2 right-2 w-6 h-6 text-cowsay" />
 								)}
 							</Switch>
 						</li>
 					);
 				})}
 			</ul>
-		</div>
+			<Transition appear show={isOpen} as={Fragment}>
+				<Dialog
+					as="div"
+					className="relative z-10"
+					onClose={() => setIsOpen(false)}
+				>
+					<Transition.Child
+						as={Fragment}
+						enter="ease-out duration-300"
+						enterFrom="opacity-0"
+						enterTo="opacity-100"
+						leave="ease-in duration-200"
+						leaveFrom="opacity-100"
+						leaveTo="opacity-0"
+					>
+						<div className="fixed inset-0 bg-black bg-opacity-25" />
+					</Transition.Child>
+
+					<div className="fixed inset-0 overflow-y-auto">
+						<div className="flex min-h-full items-center justify-center p-4 text-center">
+							<Transition.Child
+								as={Fragment}
+								enter="ease-out duration-300"
+								enterFrom="opacity-0 scale-95"
+								enterTo="opacity-100 scale-100"
+								leave="ease-in duration-200"
+								leaveFrom="opacity-100 scale-100"
+								leaveTo="opacity-0 scale-95"
+							>
+								<Dialog.Panel
+									as="form"
+									onSubmit={saveItems}
+									className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
+								>
+									<Dialog.Title
+										as="h3"
+										className="text-lg font-medium leading-6 text-gray-900"
+									>
+										Editează opțiunile
+									</Dialog.Title>
+									<div className="mt-2">
+										<textarea
+											className="text-sm w-full resize-y text-gray-500 p-4 border"
+											rows={25}
+											ref={textareaRef}
+										>
+											{checkboxes.map((item) => item.text).join("\n")}
+										</textarea>
+									</div>
+
+									<div className="mt-4">
+										<button
+											type="submit"
+											className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+										>
+											Salvează
+										</button>
+									</div>
+								</Dialog.Panel>
+							</Transition.Child>
+						</div>
+					</div>
+				</Dialog>
+			</Transition>
+		</main>
 	);
 }
 
-function Icon(props: JSX.IntrinsicElements["svg"]) {
+function IconCheck(props: JSX.IntrinsicElements["svg"]) {
 	return (
 		<svg
 			{...props}
@@ -121,6 +219,25 @@ function Icon(props: JSX.IntrinsicElements["svg"]) {
 				strokeLinecap="round"
 				strokeLinejoin="round"
 				d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"
+			/>
+		</svg>
+	);
+}
+
+function IconEdit(props: JSX.IntrinsicElements["svg"]) {
+	return (
+		<svg
+			{...props}
+			xmlns="http://www.w3.org/2000/svg"
+			fill="none"
+			viewBox="0 0 24 24"
+			strokeWidth={1.5}
+			stroke="currentColor"
+		>
+			<path
+				strokeLinecap="round"
+				strokeLinejoin="round"
+				d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
 			/>
 		</svg>
 	);
