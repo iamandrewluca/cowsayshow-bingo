@@ -135,7 +135,7 @@ export function App() {
 				</button>
 			</header>
 			<ul
-				className="grid grid-cols-5 grid-rows-5 gap-4 text-center font-semibold font-mono"
+				className="grid grid-cols-5 grid-rows-5 gap-4 font-semibold font-mono"
 				style={{
 					fontSize: "clamp(0.5rem, 1vw, 0.75rem)",
 				}}
@@ -160,7 +160,7 @@ export function App() {
 								onChange={changeItem(index)}
 								className="w-full h-full p-1 lg:p-5"
 							>
-								<span>{item.text}</span>
+								<span className="flex justify-center">{item.text}</span>
 								{item.checked && !(isCol || isRow) && (
 									<IconCheck className="absolute bottom-1 right-1 w-3 h-3 sm:bottom-2 sm:right-2 sm:w-6 sm:h-6 text-red-500" />
 								)}
