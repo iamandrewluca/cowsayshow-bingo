@@ -1,5 +1,16 @@
-import { useState, useMemo, Fragment, useRef, FormEvent } from "react";
+import {
+	useState,
+	useMemo,
+	Fragment,
+	useRef,
+	FormEvent,
+	useEffect,
+} from "react";
 import { Dialog, Transition, Switch } from "@headlessui/react";
+import Confetti from "react-confetti";
+import { useWindowSize } from "react-use";
+// @ts-expect-error
+import useSound from "use-sound";
 import cx from "clsx";
 
 // prettier-ignore
@@ -40,9 +51,14 @@ function getRowCol(index: number) {
 }
 
 export function App() {
+	const { width, height } = useWindowSize();
 	const [checkboxes, setCheckboxes] = useState(items);
 	const [isOpen, setIsOpen] = useState(false);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
+	const [play, { stop }] = useSound("/cheering.mp3", {
+		interrupt: true,
+		loop: true,
+	});
 
 	function saveItems(e: FormEvent<HTMLFormElement>) {
 		e.preventDefault();
@@ -98,8 +114,19 @@ export function App() {
 		};
 	}, [checkboxes]);
 
+	useEffect(() => {
+		if (allChecked) {
+			play();
+		} else {
+			stop();
+		}
+	}, [allChecked]);
+
 	return (
 		<main className="min-h-screen flex max-w-3xl mx-auto px-4 flex-col">
+			{allChecked && (
+				<Confetti width={width} height={height} numberOfPieces={500} />
+			)}
 			<header className="my-4 rounded-lg p-4 bg-gray-50 flex gap-3 items-center justify-between">
 				<strong>BINGO!</strong>
 
@@ -182,9 +209,10 @@ export function App() {
 											className="text-sm w-full resize-y text-gray-500 p-4 border"
 											rows={25}
 											ref={textareaRef}
-										>
-											{checkboxes.map((item) => item.text).join("\n")}
-										</textarea>
+											defaultValue={checkboxes
+												.map((item) => item.text)
+												.join("\n")}
+										/>
 									</div>
 
 									<div className="mt-4">
