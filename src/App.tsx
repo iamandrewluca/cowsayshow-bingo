@@ -165,9 +165,9 @@ export function App() {
 						<li
 							key={index}
 							className={cx("border-2 relative sm:aspect-square rounded-lg", {
-								"bg-gray-50 shadow-inner": !allChecked,
+								"bg-gray-50 shadow-inner hover:bg-gray-100": !allChecked,
 								"border-cowsay text-cowsay": !allChecked && (isCol || isRow),
-								"bg-cowsay border-cowsay shadow-inner": allChecked,
+								"bg-cowsay border-cowsay shadow-inner hover:bg-cowsay/50": allChecked,
 							})}
 						>
 							<Switch
