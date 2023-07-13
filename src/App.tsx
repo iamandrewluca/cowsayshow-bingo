@@ -132,7 +132,14 @@ export function App() {
 				<Confetti width={width} height={height} numberOfPieces={500} />
 			)}
 			<header className="my-4 rounded-lg p-4 bg-gray-50 flex gap-3 items-center">
-				<strong>BINGO!</strong>
+				<a
+					href="https://github.com/iamandrewluca/cowsayshow-bingo"
+					className="font-semibold hover:underline hover:text-blue-800"
+					target="_blank"
+					rel="noopener"
+				>
+					BINGO!
+				</a>
 
 				<button
 					className="ml-auto hover:text-gray-500"
@@ -167,7 +174,8 @@ export function App() {
 							className={cx("border-2 relative sm:aspect-square rounded-lg", {
 								"bg-gray-50 shadow-inner hover:bg-gray-100": !allChecked,
 								"border-cowsay text-cowsay": !allChecked && (isCol || isRow),
-								"bg-cowsay border-cowsay shadow-inner hover:bg-cowsay/50": allChecked,
+								"bg-cowsay border-cowsay shadow-inner hover:bg-cowsay/50":
+									allChecked,
 							})}
 						>
 							<Switch
